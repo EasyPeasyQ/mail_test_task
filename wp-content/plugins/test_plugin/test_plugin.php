@@ -3,6 +3,8 @@
 Plugin Name: test 
 */
 
+define( 'LOG_FILE', ABSPATH  . 'wp-content/plugins/test_plugin/form.log' );
+
 add_action( 'wp_ajax_send_email', 'send_email' );
 add_action( 'wp_ajax_nopriv_send_email', 'send_email' );
 
@@ -11,7 +13,7 @@ function valid_email($str) {
 }
 
 function write_log($log) {
-    file_put_contents('./log_'.date("j.n.Y").'.log', $log, FILE_APPEND);
+    file_put_contents(LOG_FILE, $log, FILE_APPEND);
 }
  
 function send_email() {
@@ -27,14 +29,7 @@ function send_email() {
         if(wp_mail($to, $subject, $message, $headers)) {
 
             $log = "[" . date('Y.m.d H:i:s') . "] Mail send - [email]: {$email}, [subject]: {$subject}\n";
-            file_put_contents(ABSPATH  . 'wp-content/plugins/test_plugin/form.log', $log, FILE_APPEND);
-            
-            //OR ADD 
-            //define( 'WP_DEBUG', true );
-            //define( 'WP_DEBUG_LOG', __DIR__ . '/wp-content/plugins/test_plugin/form.log' );
-            //IN wp-config
-            //AND
-            //error_log("Mail send: [email]: {$email}, [subject]: {$subject}");
+            write_log($log);
 
             $arr = array(
                 'properties' => array(

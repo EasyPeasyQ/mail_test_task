@@ -45,47 +45,48 @@
     </div>
 <script>
 
-document.querySelector('.btn-close').addEventListener('click', function(event) {
+document.querySelector('.btn-close').addEventListener('click', event => {
     event.target.parentElement.classList.remove('show');
 })
 
-document.querySelector('form').addEventListener('submit', function(event) {
+document.querySelector('form').addEventListener('submit', event => {
     event.preventDefault();
-    let form = this;
-    let isEmail = validateEmail(this.email.value);
+    let form = event.target;
+    let isEmail = validateEmail(form.email.value);
     let alert = document.querySelector('.alert');
     let responseConstainer = alert.querySelector('.submit-response');
     if (!isEmail) {
-        this.email.classList.add('is-invalid');
+        form.email.classList.add('is-invalid');
         responseConstainer.innerHTML = '<strong>Attention!</strong> Email is invalid';
         showMessage(alert);
     } else {
-        this.email.classList.remove('is-invalid');
+        form.email.classList.remove('is-invalid');
         let data = jQuery(event.target).serializeArray();
-        console.log(data);
         data.push({
             name: "message",
             value: window.tinyMCE.get('message').getContent()
         });
         data = jQuery.param(data);
-        console.log(data);
-        jQuery.post( "/wp-admin/admin-ajax.php", data, function(response) {
+        jQuery.post( "/wp-admin/admin-ajax.php", data, response => {
             let resposeEncode = JSON.parse(response);
 			responseConstainer.innerHTML = `<strong>${resposeEncode.header}</strong> ${resposeEncode.message}`;
-            !resposeEncode.error ? form.reset() : null;
+            !resposeEncode.error ? event.target.reset() : null;
             showMessage(alert);
-		});
+		})
+        .fail(() => {
+            responseConstainer.innerHTML = `<strong>Error!</strong>`;
+        });
     }
 });
 
-function showMessage(alert) {
+const showMessage = alert => {
     alert.classList.add('show');
     setTimeout(() => {
         alert.classList.remove('show');
     }, 4000);
 }
 
-function validateEmail(email) {
+const validateEmail = email => {
     const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
 }
